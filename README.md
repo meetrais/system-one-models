@@ -7,6 +7,7 @@ Python examples for turning messages into typed decisions: classify a request, s
 | Collection | Examples | Setup guide |
 | --- | --- | --- |
 | Jev / TypeSafe | Urgency detection, support triage, lead qualification, and an interactive classifier using `Noul`, `Choice`, and `Score`. | [Jev README](./jev-code-samples/README.md) |
+| JevEval / DeepEval | Custom single-turn, conversation, and trajectory evaluation with weighted Jev questions. | [JevEval README](./JevEval/README.md) |
 | OpenAI Decisions API | Urgency detection, department routing, severity scoring, and multiple questions in one request using `predicate`, `choice`, and `score`. | [OpenAI Decisions README](./openai-decisions-api/README.md) |
 
 Each collection has its own dependencies, environment template, and client helper. The collections can be run independently.
@@ -24,6 +25,7 @@ The scripts require network access and credentials for the chosen provider. The 
 ## Repository layout
 
 - [jev-code-samples/](./jev-code-samples/): four scripts, `jev_client.py`, `requirements.txt`, and `.env.example`.
+- [JevEval/](./JevEval/): three evaluation examples, custom rubrics, offline tests, and setup instructions.
 - [openai-decisions-api/](./openai-decisions-api/): four scripts, `decision_client.py`, `requirements.txt`, and `.env.example`.
 - [LICENSE](./LICENSE): Apache License 2.0.
 
@@ -31,7 +33,7 @@ The scripts require network access and credentials for the chosen provider. The 
 
 Jev requires `TYPESAFE_API_KEY`; the OpenAI samples require `OPENAI_API_KEY`. Copy the appropriate `.env.example` only if you do not already have a `.env` file in that folder, then replace the placeholder key.
 
-Both client helpers load configuration in this order, preserving values already set:
+The client and JevEval helpers load configuration in this order, preserving values already set:
 
 1. Environment variables in the current process.
 2. The sample collection's `.env` file.
