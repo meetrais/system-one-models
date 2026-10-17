@@ -5,6 +5,9 @@ import os
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
+from contextlib import redirect_stdout
+from io import StringIO
 
 os.environ["DEEPEVAL_TELEMETRY_OPT_OUT"] = "YES"
 os.environ["DEEPEVAL_NO_INSPECT_PROMPT"] = "1"
@@ -24,6 +27,44 @@ from deepeval.test_case import SingleTurnParams
 
 from metrics import refund_handling, tool_faithfulness, tool_use
 from sample_cases import refund_case, weather_case
+from sample_cases import rubric_case
+import metrics as custom_metrics
+from deepeval.models.system_one.schema import ChoiceQuestion, NoulQuestion, ScoreQuestion
+
+
+class RubricJudge(DeepEvalBaseSystemOneModel):
+    """Exercise arbitrary rubrics with explicit, valid probability distributions."""
+
+    def __init__(self):
+        self.calls = []
+        super().__init__(model="rubric-offline-judge")
+
+    def load_model(self):
+        return None
+
+    def get_model_name(self):
+        return "rubric-offline-judge"
+
+    def decide(self, state, questions):
+        self.calls.append((state, questions))
+        answers = SystemOneAnswers()
+        for key, question in questions.items():
+            if isinstance(question, NoulQuestion):
+                answers.nouls[key] = NoulAnswer(probability=0.75)
+            elif isinstance(question, ScoreQuestion):
+                top = len(question.levels) - 1
+                probabilities = {index: 0.0 for index in range(top + 1)}
+                probabilities.update({0: 0.25, top: 0.75})
+                answers.scores[key] = ScoreAnswer(score=top * 0.75, probabilities=probabilities, confidence=0.5)
+            elif isinstance(question, ChoiceQuestion):
+                choices = list(question.options)
+                probabilities = {choice: 0.0 for choice in choices}
+                probabilities.update({choices[0]: 0.75, choices[-1]: 0.25})
+                answers.choices[key] = ChoiceAnswer(choice=choices[0], probabilities=probabilities, confidence=0.5)
+        return answers, 0.0
+
+    async def a_decide(self, state, questions):
+        return self.decide(state, questions)
 
 
 class FixedJudge(DeepEvalBaseSystemOneModel):
@@ -72,6 +113,52 @@ def weather_answers():
 
 
 class JevEvalIntegrationTests(unittest.TestCase):
+    def test_all_custom_rubrics_measure_both_modes_with_required_state(self):
+        single_fields = {
+            "correctness": {"input", "actual_output", "expected_output"},
+            "clarity": {"input", "actual_output"},
+            "professionalism": {"actual_output"},
+            "pii_leakage": {"input", "actual_output"},
+            "medical_faithfulness": {"actual_output", "retrieval_context"},
+        }
+        for name, fields in single_fields.items():
+            for conversational in (False, True):
+                with self.subTest(rubric=name, conversational=conversational):
+                    judge = RubricJudge()
+                    metric = getattr(custom_metrics, name)(
+                        conversational=conversational, system_one_model=judge, async_mode=False,
+                    )
+                    case = rubric_case(name, conversational=conversational)
+                    metric.measure(case, _show_indicator=False)
+                    self.assertEqual(len(judge.calls), 1)
+                    self.assertTrue(0 <= metric.score <= 1)
+                    self.assertTrue(metric.reason)
+                    self.assertEqual(len(metric.score_breakdown), len(metric.questions))
+                    state, _ = judge.calls[0]
+                    if conversational:
+                        self.assertEqual(len(state["turns"]), len(case.turns))
+                        expected_fields = {"scenario", "expected_outcome"} if name == "correctness" else {"scenario"}
+                        self.assertEqual(set(state["test_case"]), expected_fields)
+                        if name == "medical_faithfulness":
+                            assistant_turns = [turn for turn in state["turns"] if turn["role"] == "assistant"]
+                            self.assertEqual(len(assistant_turns), 2)
+                            self.assertTrue(all(turn["retrieval_context"] for turn in assistant_turns))
+                    else:
+                        self.assertEqual(set(state["test_case"]), fields)
+
+    def test_custom_example_cli_selects_conversation_and_strict_mode(self):
+        import rubric_examples
+
+        judge = RubricJudge()
+        output = StringIO()
+        with patch.object(sys, "argv", ["06_tonality.py", "--multi-turn", "--strict"]), \
+                patch.object(rubric_examples, "configure_environment", return_value=judge), \
+                redirect_stdout(output):
+            rubric_examples.run_example("professionalism", "Test tone rubric")
+        self.assertEqual(len(judge.calls), 1)
+        self.assertIn("turns", judge.calls[0][0])
+        self.assertIn("Threshold: 1.00; passed: True", output.getvalue())
+
     def test_weighted_mean_and_visible_fields(self):
         judge = FixedJudge(weather_answers())
         metric = tool_faithfulness(system_one_model=judge, async_mode=False)

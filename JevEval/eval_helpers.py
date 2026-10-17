@@ -11,11 +11,13 @@ from typing import Any
 from dotenv import load_dotenv
 
 
-def parse_args(description: str, *, trajectory: bool = False) -> argparse.Namespace:
+def parse_args(description: str, *, trajectory: bool = False, conversation: bool = False) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument("--strict", action="store_true", help="Require every applicable question to pass.")
     parser.add_argument("--score-only", action="store_true", help="Disable the passing threshold.")
     parser.add_argument("--verbose", action="store_true", help="Print DeepEval's question-level logs.")
+    if conversation:
+        parser.add_argument("--multi-turn", action="store_true", help="Evaluate the conversation version of this rubric.")
     if not trajectory:
         parser.add_argument("--evaluate", action="store_true", help="Use DeepEval evaluate() instead of measure().")
     args = parser.parse_args()

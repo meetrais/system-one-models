@@ -25,7 +25,7 @@ The scripts require network access and credentials for the chosen provider. The 
 ## Repository layout
 
 - [jev-code-samples/](./jev-code-samples/): four scripts, `jev_client.py`, `requirements.txt`, and `.env.example`.
-- [JevEval/](./JevEval/): three evaluation examples, custom rubrics, offline tests, and setup instructions.
+- [JevEval/](./JevEval/): eight evaluation scripts covering custom rubrics, conversations, and trajectories, plus offline tests and setup instructions.
 - [openai-decisions-api/](./openai-decisions-api/): four scripts, `decision_client.py`, `requirements.txt`, and `.env.example`.
 - [LICENSE](./LICENSE): Apache License 2.0.
 

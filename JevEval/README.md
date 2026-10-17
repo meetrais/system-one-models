@@ -60,6 +60,11 @@ Run from this folder:
 python 01_single_turn.py
 python 02_multi_turn.py
 python 03_trajectory.py
+python 04_answer_correctness.py
+python 05_coherence.py
+python 06_tonality.py
+python 07_safety_pii.py
+python 08_custom_rag.py
 ```
 
 ## Examples
@@ -69,17 +74,35 @@ python 03_trajectory.py
 | [01_single_turn.py](./01_single_turn.py) | Tool Faithfulness | A weather response adds wind and humidity absent from the tool output. |
 | [02_multi_turn.py](./02_multi_turn.py) | Refund Handling | A conversation ends with a refund timeline but never confirms the requested amount. |
 | [03_trajectory.py](./03_trajectory.py) | Tool Use | An observed agent calls `order_lookup` and reports its result. The agent and tool are fixed Python functions. |
+| [04_answer_correctness.py](./04_answer_correctness.py) | Correctness | Compare dispatch and tracking claims with a reference answer or expected conversation outcome. |
+| [05_coherence.py](./05_coherence.py) | Clarity | Beginner-friendly explanations, explained jargon, and coherence across turns. |
+| [06_tonality.py](./06_tonality.py) | Professionalism | Professional wording and respectful handling of a rude user in the conversation version. |
+| [07_safety_pii.py](./07_safety_pii.py) | PII Leakage | Anonymization of synthetic support data; conversations distinguish volunteered information from assistant-introduced details. |
+| [08_custom_rag.py](./08_custom_rag.py) | Medical Faithfulness | Grounding in fictional documents, including per-assistant-turn retrieval context for conversations. |
 
-The first two scripts use standalone `measure()` by default and print the metric score, threshold, success, reason, and `score_breakdown`. They can also run through DeepEval's evaluation runner:
+All examples except the trajectory script use standalone `measure()` by default and print the metric score, threshold, success, reason, and `score_breakdown`. They can also run through DeepEval's evaluation runner:
 
 ```bash
 python 01_single_turn.py --evaluate
 python 02_multi_turn.py --evaluate
+python 04_answer_correctness.py --multi-turn --evaluate
 ```
 
 The trajectory example uses `EvaluationDataset.evals_iterator` and DeepEval's result reporting. It intentionally omits `evaluation_params`. Calling a trajectory metric with an ordinary, untraced `LLMTestCase` raises `MissingTestCaseParamsError`. `ConversationalJevEval` has no trajectory mode.
 
-All three scripts accept:
+Scripts 04 through 08 each support both single-turn (default) and conversation evaluation. Add `--multi-turn` to select the conversation fixture and rubric. These commands work in PowerShell and Linux/macOS shells after environment activation:
+
+```bash
+python 04_answer_correctness.py --multi-turn
+python 05_coherence.py --multi-turn
+python 06_tonality.py --multi-turn
+python 07_safety_pii.py --multi-turn
+python 08_custom_rag.py --multi-turn
+```
+
+The five single-turn rubrics follow your supplied JevEval Examples. Their conversation versions adapt the checks to the full turns list and selected conversation fields. Weights and questions are examples to tune for your own requirements. A higher PII Leakage score means better privacy behavior. Medical Faithfulness measures support in the supplied documents; it does not establish medical correctness. The medical documents describe an invented condition and protocol solely to demonstrate grounding.
+
+All scripts accept:
 
 | Flag | Behavior |
 | --- | --- |
@@ -124,7 +147,7 @@ Metric settings include `system_one_model` (default `jev-latest`), `threshold` (
 python -m unittest discover -s tests -v
 ```
 
-The tests use fixed System One answers with the real DeepEval metrics. They require installed dependencies, but no API key or live judge. They verify weighted scoring, applicability, strict mode, field visibility, and trace requirements. Live API results are not asserted as exact scores.
+The tests use fixed System One answers with the real DeepEval metrics. They require installed dependencies, but no API key or live judge. They verify weighted scoring, applicability, strict mode, field visibility, and trace requirements, plus all five new rubrics in both modes and the conversation CLI path. Live API results are not asserted as exact scores.
 
 ## Troubleshooting
 
