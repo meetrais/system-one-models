@@ -1,98 +1,110 @@
-# Jev System One Python Code Samples
+# Jev System One Python samples
 
-Python examples for calling System One models such as Jev through the official TypeSafe Python SDK.
+Use the TypeSafe Python SDK to classify messages, score support tickets and sales leads, and detect urgency. The scripts call `TypeSafeClient.system_one` with `Choice`, `Score`, and `Noul` questions and print answers in the terminal.
+
+[Back to the repository overview](../README.md)
 
 ## Setup
 
-Run these commands from the `jev-code-samples` folder.
+You need Python with `pip` and virtual environment support, network access, and a TypeSafe API key. Start at the repository root. If your terminal is already in `jev-code-samples`, skip the `cd` command.
 
 ### Windows PowerShell
 
-1. Create and activate a virtual environment:
+```powershell
+cd jev-code-samples
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
 
-   ```powershell
-   python -m venv .venv
-   .\.venv\Scripts\Activate.ps1
-   ```
+If you do not already have a `.env` file in this folder, create one:
 
-2. Install dependencies:
+```powershell
+Copy-Item .env.example .env
+```
 
-   ```powershell
-   pip install -r requirements.txt
-   ```
+### macOS or Linux
 
-3. Create your local environment file:
+```bash
+cd jev-code-samples
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+```
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+If you do not already have a `.env` file in this folder, create one:
 
-4. Add your API key to `.env`:
+```bash
+cp .env.example .env
+```
 
-   ```dotenv
-   TYPESAFE_API_KEY=your_real_key
-   TYPESAFE_BASE_URL=https://api.typesafe.ai
-   TYPESAFE_DEFAULT_MODEL=jev-latest
-   ```
+### Add your API key and run
 
-### Linux or macOS
+Edit `jev-code-samples/.env` and replace the placeholder key:
 
-1. Create and activate a virtual environment:
+```dotenv
+TYPESAFE_API_KEY=your_real_key
+TYPESAFE_BASE_URL=https://api.typesafe.ai
+TYPESAFE_DEFAULT_MODEL=jev-latest
+```
 
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   python -m pip install -r requirements.txt
-   ```
-
-3. Create your local environment file:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-4. Add your API key to `.env`:
-
-   ```dotenv
-   TYPESAFE_API_KEY=your_real_key
-   TYPESAFE_BASE_URL=https://api.typesafe.ai
-   TYPESAFE_DEFAULT_MODEL=jev-latest
-   ```
-
-If your endpoint or model identifier is different, update `TYPESAFE_BASE_URL` or `TYPESAFE_DEFAULT_MODEL`.
-
-The helper loads `.env` from either `jev-code-samples/.env` or the repo root `.env`.
-
-## Samples
-
-After setup, run any sample from the `jev-code-samples` folder.
+From the same folder, run:
 
 ```bash
 python 01_urgency_noul.py
-python 02_support_triage.py
-python 03_lead_qualification.py
+```
+
+The script prints `is_urgent` with a numeric value and a yes/no interpretation. Actual values can vary between requests.
+
+## Samples
+
+Run any script from this folder with `python <filename>`.
+
+| Script | Demonstrates | Printed results |
+| --- | --- | --- |
+| [01_urgency_noul.py](./01_urgency_noul.py) | A single `Noul` question about urgency. | Urgency value and yes/no label. |
+| [02_support_triage.py](./02_support_triage.py) | `Choice`, `Score`, and `Noul` questions about one ticket. | Department, frustration, and urgency. |
+| [03_lead_qualification.py](./03_lead_qualification.py) | Evaluate a sales lead with multiple questions. | Segment, fit score, budget availability, and buying timeline. |
+| [04_interactive_classifier.py](./04_interactive_classifier.py) | Classify messages entered in the terminal. | Department, frustration, and urgency for each message. |
+
+The first three scripts use input defined in their source files. For interactive input, run:
+
+```bash
 python 04_interactive_classifier.py
 ```
 
-## Environment Variables
+Enter a message at the `Message:` prompt. Type `exit` or `quit` to end the session. Each submitted message makes a separate API request.
 
-| Name | Required | Description |
+## Configuration
+
+| Variable | Required | Purpose |
 | --- | --- | --- |
-| `TYPESAFE_API_KEY` | Yes | Your TypeSafe AI API key. |
-| `TYPESAFE_BASE_URL` | No | TypeSafe API base URL. The SDK defaults to `https://api.typesafe.ai`. |
-| `TYPESAFE_DEFAULT_MODEL` | No | Default model name. The SDK defaults to `jev-latest`. |
+| `TYPESAFE_API_KEY` | Yes | API key passed to `TypeSafeClient`. |
+| `TYPESAFE_BASE_URL` | No | SDK endpoint setting; the example template uses `https://api.typesafe.ai`. |
+| `TYPESAFE_DEFAULT_MODEL` | No | SDK model setting; the example template uses `jev-latest`. |
 
-These samples use `TypeSafeClient.system_one` with `Choice`, `Score`, and `Noul` questions, matching the official Python SDK sample shape.
+[jev_client.py](./jev_client.py) loads configuration in this order without overwriting existing values:
+
+1. Environment variables already set in the process.
+2. `jev-code-samples/.env`.
+3. The repository root `.env`, for values still missing.
+
+The helper passes the API key explicitly; endpoint and model configuration are left to the SDK. If an edited `.env` value appears to be ignored, check whether that variable is already set in your terminal environment.
+
+## Reading and adapting results
+
+`Choice` questions define named categories in a `criteria` dictionary. The scripts read the selected category from `.choice`. `Score` questions define an ordered list of criteria and read the numeric result from `.score`. `Noul` questions evaluate a condition and return a numeric value through `.noul`.
+
+For display, the samples interpret a `Noul` value at or above `0.5` as `yes`. They round a score to select a label from the corresponding criteria list and clamp the index to that list's bounds. These interpretations are defined in each script's `describe_noul` and `describe_score` helpers.
+
+To try your own task, edit the input string and question instructions in a script. Adjust the `Choice` criteria or ordered `Score` criteria as needed. The score criteria lists also supply the labels printed by the examples, so keep their order meaningful.
 
 ## Troubleshooting
 
-If you see `Unknown model: jev`, update your `.env` file to use:
-
-```dotenv
-TYPESAFE_DEFAULT_MODEL=jev-latest
-```
+| Symptom | What to check |
+| --- | --- |
+| `Missing API key. Set TYPESAFE_API_KEY in .env.` | Set the key in this folder's `.env`, the repository root `.env`, or the process environment. |
+| `ModuleNotFoundError` for `typesafe_sdk` or `dotenv` | Activate the environment used for setup and run `python -m pip install -r requirements.txt`. |
+| `Unknown model: jev` | Set `TYPESAFE_DEFAULT_MODEL=jev-latest`, matching the example template, or use the model identifier provided for your account. Check for an older process environment value as well. |
+| Authentication or connection error | Check your key and endpoint configuration. |
+| PowerShell blocks `Activate.ps1` | Use `.\.venv\Scripts\python.exe` in place of `python` for installation and sample commands; activation is optional. |

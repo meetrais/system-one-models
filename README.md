@@ -1,83 +1,40 @@
-# system-one-models
-Code examples, experiments, and practical patterns for System One models like Jev.
+# System One model samples
 
-## Code samples
+Python examples for turning messages into typed decisions: classify a request, score an issue, or estimate whether a condition is true.
 
-- [jev-code-samples](./jev-code-samples): Python examples for calling Jev through the TypeSafe Python SDK with an API key from `.env`.
-- [openai-decisions-api](./openai-decisions-api): Python examples for the OpenAI Decisions API using `predicate`, `choice`, and `score` questions.
+## Choose a collection
 
-## Jev Quick Start
+| Collection | Examples | Setup guide |
+| --- | --- | --- |
+| Jev / TypeSafe | Urgency detection, support triage, lead qualification, and an interactive classifier using `Noul`, `Choice`, and `Score`. | [Jev README](./jev-code-samples/README.md) |
+| OpenAI Decisions API | Urgency detection, department routing, severity scoring, and multiple questions in one request using `predicate`, `choice`, and `score`. | [OpenAI Decisions README](./openai-decisions-api/README.md) |
 
-Run these commands from the `jev-code-samples` folder.
+Each collection has its own dependencies, environment template, and client helper. The collections can be run independently.
 
-### Windows PowerShell
+## Getting started
 
-```powershell
-cd jev-code-samples
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-```
+1. Install Python with `pip` and virtual environment support.
+2. Open a terminal at the repository root and choose a collection above.
+3. Follow its Windows PowerShell or macOS/Linux setup instructions.
+4. Add the relevant provider's API key to the collection's `.env` file.
+5. Run the first sample, then explore the other scripts.
 
-Add your API key to `jev-code-samples/.env`, then run a sample:
+The scripts require network access and credentials for the chosen provider. The first three Jev samples and all OpenAI samples use messages defined in the source code. The interactive Jev sample accepts messages in the terminal.
 
-```powershell
-python 01_urgency_noul.py
-```
+## Repository layout
 
-### Linux or macOS
+- [jev-code-samples/](./jev-code-samples/): four scripts, `jev_client.py`, `requirements.txt`, and `.env.example`.
+- [openai-decisions-api/](./openai-decisions-api/): four scripts, `decision_client.py`, `requirements.txt`, and `.env.example`.
+- [LICENSE](./LICENSE): Apache License 2.0.
 
-```bash
-cd jev-code-samples
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-cp .env.example .env
-```
+## Configuration
 
-Add your API key to `jev-code-samples/.env`, then run a sample:
+Jev requires `TYPESAFE_API_KEY`; the OpenAI samples require `OPENAI_API_KEY`. Copy the appropriate `.env.example` only if you do not already have a `.env` file in that folder, then replace the placeholder key.
 
-```bash
-python 01_urgency_noul.py
-```
+Both client helpers load configuration in this order, preserving values already set:
 
-The samples expect `TYPESAFE_API_KEY` in `.env`. You can optionally set `TYPESAFE_BASE_URL=https://api.typesafe.ai` and `TYPESAFE_DEFAULT_MODEL=jev-latest`.
+1. Environment variables in the current process.
+2. The sample collection's `.env` file.
+3. The repository root `.env` file, which fills in missing values.
 
-## OpenAI Decisions Quick Start
-
-Run these commands from the `openai-decisions-api` folder.
-
-### Windows PowerShell
-
-```powershell
-cd openai-decisions-api
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-```
-
-Add your API key to `openai-decisions-api/.env`, then run a sample:
-
-```powershell
-python 01_predicate_urgency.py
-```
-
-### Linux or macOS
-
-```bash
-cd openai-decisions-api
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-cp .env.example .env
-```
-
-Add your API key to `openai-decisions-api/.env`, then run a sample:
-
-```bash
-python 01_predicate_urgency.py
-```
-
-The samples expect `OPENAI_API_KEY` in `.env`. You can optionally set `OPENAI_DECISIONS_MODEL=gpt-6-luna`.
+Environment file paths are resolved relative to the helper file. Each collection's README lists optional settings and troubleshooting steps.
