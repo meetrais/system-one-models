@@ -9,6 +9,7 @@ Python examples for turning messages into typed decisions: classify a request, s
 | Jev / TypeSafe | Urgency detection, support triage, lead qualification, and an interactive classifier using `Noul`, `Choice`, and `Score`. | [Jev README](./jev-code-samples/README.md) |
 | JevEval / DeepEval | Custom single-turn, conversation, and trajectory evaluation with weighted Jev questions. | [JevEval README](./JevEval/README.md) |
 | OpenAI Decisions API | Urgency detection, department routing, severity scoring, and multiple questions in one request using `predicate`, `choice`, and `score`. | [OpenAI Decisions README](./openai-decisions-api/README.md) |
+| Gemini Decisions API | Yes/no checks, department routing, severity scoring, support triage, and media checks using `noul`, `choice`, and `score`. | [Gemini Decisions README](./gemini-decisions-api/README.md) |
 
 Each collection has its own dependencies, environment template, and client helper. The collections can be run independently.
 
@@ -20,18 +21,19 @@ Each collection has its own dependencies, environment template, and client helpe
 4. Add the relevant provider's API key to the collection's `.env` file.
 5. Run the first sample, then explore the other scripts.
 
-The scripts require network access and credentials for the chosen provider. The first three Jev samples and all OpenAI samples use messages defined in the source code. The interactive Jev sample accepts messages in the terminal.
+The scripts require network access and credentials for the chosen provider. The first three Jev samples, all OpenAI samples, and Gemini text samples use messages defined in the source code. The interactive Jev sample accepts messages in the terminal; the Gemini media sample accepts command-line arguments.
 
 ## Repository layout
 
 - [jev-code-samples/](./jev-code-samples/): four scripts, `jev_client.py`, `requirements.txt`, and `.env.example`.
 - [JevEval/](./JevEval/): eight evaluation scripts covering custom rubrics, conversations, and trajectories, plus offline tests and setup instructions.
 - [openai-decisions-api/](./openai-decisions-api/): four scripts, `decision_client.py`, `requirements.txt`, and `.env.example`.
+- [gemini-decisions-api/](./gemini-decisions-api/): six scripts, `decision_client.py`, offline tests, `requirements.txt`, and `.env.example`.
 - [LICENSE](./LICENSE): Apache License 2.0.
 
 ## Configuration
 
-Jev requires `TYPESAFE_API_KEY`; the OpenAI samples require `OPENAI_API_KEY`. Copy the appropriate `.env.example` only if you do not already have a `.env` file in that folder, then replace the placeholder key.
+Jev requires `TYPESAFE_API_KEY`; the OpenAI samples require `OPENAI_API_KEY`; the Gemini samples require `GEMINI_API_KEY`. Copy the appropriate `.env.example` only if you do not already have a `.env` file in that folder, then replace the placeholder key.
 
 The client and JevEval helpers load configuration in this order, preserving values already set:
 
